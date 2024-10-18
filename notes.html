@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #note-form {
+      margin-bottom: 40px;
+    }
+
+    #note-form textarea {
+      width: 100%;
+      padding: 15px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      resize: none;
+      min-height: 100px;
+    }
+
+    #note-form button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #note-form button:hover {
+      background-color: #218838;
+    }
+
+    #notes-list h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    #notes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .note-card {
+      background-color: #f8f9fa;
+      border-left: 5px solid #28a745;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .note-card p {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .note-card small {
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+
+      header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>My Notes</h1>
+    </header>
+
+    <section id="note-form">
+      <form id="add-note-form">
+        <textarea id="note-msg" placeholder="Write a new note..."></textarea>
+        <button type="submit">Add Note</button>
+      </form>
+    </section>
+
+    <section id="notes-list">
+      <h2>All Notes</h2>
+      <div id="notes-container"></div>
+    </section>
+  </div>
+
+  <script>
+    // JavaScript to handle fetching and adding notes
+
+    // URL of your backend server
+    const API_URL = 'http://localhost:3000/api/notes';
+
+    // Fetch notes from server and display them
+    async function fetchNotes() {
+      const response = await fetch(API_URL);
+      const notes = await response.json();
+      const notesContainer = document.getElementById('notes-container');
+      
+      notesContainer.innerHTML = '';
+      notes.forEach(note => {
+        const noteCard = document.createElement('div');
+        noteCard.classList.add('note-card');
+        noteCard.innerHTML = `
+          <p>${note.msg}</p>
+          <small>${new Date(note.time).toLocaleString()}</small>
+        `;
+        notesContainer.appendChild(noteCard);
+      });
+    }
+
+    // Add a new note to the server
+    async function addNote(msg) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: 1, msg })
+      });
+      
+      const note = await response.json();
+      fetchNotes(); // Refresh notes list
+    }
+
+    // Handle form submission
+    document.getElementById('add-note-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      
+      const noteMsg = document.getElementById('note-msg').value;
+      if (noteMsg.trim()) {
+        addNote(noteMsg);
+        document.getElementById('note-msg').value = ''; // Clear the input
+      }
+    });
+
+    // Fetch and display notes when page loads
+    fetchNotes();
+  </script>
+
+</body>
+</html>
